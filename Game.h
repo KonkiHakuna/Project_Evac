@@ -1,8 +1,22 @@
-﻿// Project Evac.h: plik dołączany dla standardowych systemowych plików dołączanych,
-// lub pliki dołączane specyficzne dla projektu.
+﻿#pragma once
 
-#pragma once
+#include <SFML/Graphics.hpp>
 
-#include <iostream>
+#include "UI.h"
 
-// TODO: W tym miejscu przywołaj dodatkowe nagłówki wymagane przez program.
+class Game {
+public:
+	Game();
+	void run();
+private:
+	sf::RenderWindow window;
+	sf::VideoMode mode;
+	sf::Font caveatFont;
+
+	StartScreen startScreen{window,caveatFont};
+	bool isStartScreen = true;
+
+	PauseMenu pauseMenu{window,caveatFont};
+	bool isPaused = false;
+};
+

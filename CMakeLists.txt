@@ -22,5 +22,5 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(fmt)
 
-add_executable(Project_Evac Game.cpp)
-target_link_libraries(Project_Evac PRIVATE SFML::Graphics SFML::SYSTEM SFML::WINDOW fmt)
+add_executable(Project_Evac Game.cpp main.cpp "UI.cpp" "UI.h")
+target_link_libraries(Project_Evac SFML::Graphics SFML::Window SFML::System fmt)
