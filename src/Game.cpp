@@ -10,6 +10,8 @@ Game::Game() {
 	}
 	startScreen = StartScreen(window, caveatFont);
 	pauseMenu = PauseMenu(window, caveatFont);
+	lobby = Lobby(window);
+	player = Player(window);
 }
 void Game::run() {
 	while (window.isOpen()) {
@@ -17,27 +19,33 @@ void Game::run() {
 			if (event->is<sf::Event::Closed>()) {
 				window.close();
 			}
-			if (isStartScreen){
+			if (currentGameState == GameState::startScreen){
 				if (event->is<sf::Event::KeyPressed>()){
 					if (event->getIf<sf::Event::KeyPressed>()->scancode == sf::Keyboard::Scancode::Space) {
-						isStartScreen = false;
+						currentGameState = GameState::lobby;
 					}
 				}
 			}
 			else {
 				if (event->is<sf::Event::KeyPressed>()) {
 					if (event->getIf<sf::Event::KeyPressed>()->scancode == sf::Keyboard::Scancode::Escape) {
-						isPaused = !isPaused;
+						if (currentGameState != GameState::paused) {
+							previousGameState = currentGameState;
+							currentGameState = GameState::paused;
+						}
+						else {
+							currentGameState = previousGameState;
+						}
 					}
 				}
-				if (isPaused) {
+				if (currentGameState == GameState::paused) {
 					if (event->is<sf::Event::MouseMoved>()) {
 						pauseMenu.mouseMove(*event->getIf<sf::Event::MouseMoved>());
 					}
 					if (event->is<sf::Event::MouseButtonPressed>()) {
 						pauseMenu.mouseClick(*event->getIf<sf::Event::MouseButtonPressed>());
 						if (pauseMenu.getDecision() == 0) {
-							isPaused = false;
+							currentGameState = previousGameState;
 						}
 						else if (pauseMenu.getDecision() == 1) {
 							window.close();
@@ -48,13 +56,20 @@ void Game::run() {
 			}
 		}
 		window.clear(sf::Color::Black);
-		if (isStartScreen) {
-			startScreen.drawStartScreen(window);
-		}
-		else {
-			if (isPaused) {
+		switch (currentGameState) {
+			case GameState::startScreen:
+				startScreen.drawStartScreen(window);
+				break;
+			case GameState::lobby:
+				player.movement();
+				lobby.draw(window);
+				player.draw(window);
+				break;
+			case GameState::paused:
 				pauseMenu.drawPauseMenu(window);
-			}
+				break;
+			default:
+				throw std::runtime_error("Invalid game state");
 		}
 		window.display();
 	}

@@ -22,7 +22,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(fmt)
 
-add_executable(Project_Evac src/main.cpp src/Game.cpp src/Game.h src/UI.cpp src/UI.h)
+add_executable(Project_Evac src/main.cpp src/Game.cpp src/Game.h src/UI.cpp src/UI.h "src/Map.cpp" "src/Map.h" "src/Player.cpp" "src/Player.h")
 target_link_libraries(Project_Evac SFML::Graphics SFML::Window SFML::System fmt)
 
 add_custom_command(TARGET Project_Evac POST_BUILD
