@@ -29,5 +29,7 @@ private:
 
 	Lobby lobby{window};
 	Player player{window};
+
+	Shop shop;
 };
 

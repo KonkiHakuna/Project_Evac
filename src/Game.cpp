@@ -1,6 +1,8 @@
 ﻿
 #include "Game.h"
 
+#include <iostream>
+
 Game::Game() {
 	mode = sf::VideoMode::getDesktopMode();
 	window.create(mode, "Evac", sf::Style::Default,sf::State::Fullscreen);
@@ -64,6 +66,10 @@ void Game::run() {
 				player.movement();
 				lobby.draw(window);
 				player.draw(window);
+				if (lobby.playerLocation(player)!=LobbyLocation::Default) {
+					shop.interact(window,caveatFont);
+					shop.keyPressed();
+				}
 				break;
 			case GameState::paused:
 				pauseMenu.drawPauseMenu(window);

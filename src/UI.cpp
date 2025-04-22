@@ -34,7 +34,7 @@ PauseMenu::PauseMenu(sf::RenderWindow& window, sf::Font& font) {
 	}
 }
 
-void PauseMenu::drawPauseMenu(sf::RenderWindow& window) {
+void PauseMenu::drawPauseMenu(sf::RenderWindow& window) const {
 	for (const auto& option : menuOptions) {
 		window.draw(option);
 	}
@@ -59,5 +59,23 @@ void PauseMenu::mouseMove(sf::Event::MouseMoved const& e) {
 		else {
 			option.setFillColor(sf::Color::White);
 		}
+	}
+}
+
+/*============================= Shop =============================*/
+
+void Shop::interact(sf::RenderWindow& window, const sf::Font& font) {
+	if (!isOpen) {
+		sf::Text text{ font,"Press E to interact",128 };
+		text.setFillColor(sf::Color::White);
+		text.setOrigin({ static_cast<float>(text.getLocalBounds().size.x / 2),static_cast<float>(text.getLocalBounds().size.y) / 2 });
+		text.setPosition({ static_cast<float>(window.getSize().x / 2),static_cast<float>(window.getSize().y)-256});
+		window.draw(text);
+	}
+}
+
+void Shop::keyPressed() {
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::E)) {
+		isOpen = true;
 	}
 }

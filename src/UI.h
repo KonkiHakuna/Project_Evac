@@ -17,7 +17,7 @@ private:
 class PauseMenu {
 public:
 	PauseMenu(sf::RenderWindow& window, sf::Font& font);
-	void drawPauseMenu(sf::RenderWindow& window);
+	void drawPauseMenu(sf::RenderWindow& window) const;
 	void mouseClick(sf::Event::MouseButtonPressed const& e);
 	void mouseMove(sf::Event::MouseMoved const& e);
 	void resetDecision() { decision = NULL; }
@@ -27,5 +27,13 @@ private:
 	int decision=NULL;
 };
 
-//class HUD{}
+class Shop {
+public:
+	void interact(sf::RenderWindow& window, const sf::Font& font);
+	void keyPressed();
+private:
+	bool isOpen = false;
+};
+
+//class HUD{};
 

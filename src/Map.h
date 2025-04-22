@@ -15,9 +15,9 @@ enum class LobbyLocation {
 
 class Lobby {
 public:
-	Lobby(sf::RenderWindow& window);
+	Lobby(const sf::RenderWindow& window);
 	void draw(sf::RenderWindow& window) const;
-	void playerBehavior(Player& player);
+	LobbyLocation playerLocation(const Player& player);
 private:
 	LobbyLocation location = LobbyLocation::Default;
 
