@@ -1,8 +1,6 @@
 ﻿
 #include "Game.h"
 
-#include <iostream>
-
 Game::Game() {
 	mode = sf::VideoMode::getDesktopMode();
 	window.create(mode, "Evac", sf::Style::Default,sf::State::Fullscreen);
@@ -14,6 +12,7 @@ Game::Game() {
 	pauseMenu = PauseMenu(window, caveatFont);
 	lobby = Lobby(window);
 	player = Player(window);
+	shop = Shop(window);
 }
 void Game::run() {
 	while (window.isOpen()) {
@@ -55,24 +54,37 @@ void Game::run() {
 						pauseMenu.resetDecision();
 					}
 				}
+				if (currentGameState == GameState::lobby && shop.shoppingStatus(lobby.playerLocation(player))){
+					if (event->is<sf::Event::MouseButtonPressed>()) {
+						if (event->getIf<sf::Event::MouseButtonPressed>()->button == sf::Mouse::Button::Left) {
+							shop.mouseClick(*event->getIf<sf::Event::MouseButtonPressed>());
+						}
+					}
+				}
 			}
 		}
 		window.clear(sf::Color::Black);
 		switch (currentGameState) {
 			case GameState::startScreen:
-				startScreen.drawStartScreen(window);
+				startScreen.draw(window);
 				break;
 			case GameState::lobby:
 				player.movement();
 				lobby.draw(window);
 				player.draw(window);
 				if (lobby.playerLocation(player)!=LobbyLocation::Default) {
-					shop.interact(window,caveatFont);
-					shop.keyPressed();
+					if (!shop.shoppingStatus(lobby.playerLocation(player))) {
+						shop.interact(window,caveatFont);
+						shop.keyPressed();
+					}
+					else {
+						shop.draw(window);
+					}
+
 				}
 				break;
 			case GameState::paused:
-				pauseMenu.drawPauseMenu(window);
+				pauseMenu.draw(window);
 				break;
 			default:
 				throw std::runtime_error("Invalid game state");

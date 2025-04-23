@@ -30,6 +30,6 @@ private:
 	Lobby lobby{window};
 	Player player{window};
 
-	Shop shop;
+	Shop shop{window};
 };
 

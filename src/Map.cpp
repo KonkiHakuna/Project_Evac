@@ -1,6 +1,5 @@
 
 #include "Map.h"
-
 #include "Game.h"
 
 Lobby::Lobby(const sf::RenderWindow& window) {
