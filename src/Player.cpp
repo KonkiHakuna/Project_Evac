@@ -30,3 +30,8 @@ void Player::draw(sf::RenderWindow& window) const{
 sf::Vector2f Player::getPosition() const{
 	return shape.getPosition();
 }
+
+void Player::resetPosition(sf::RenderWindow& window) {
+	shape.setPosition({ static_cast<float>(window.getSize().x / 2),static_cast<float>(window.getSize().y / 2) });
+}
+

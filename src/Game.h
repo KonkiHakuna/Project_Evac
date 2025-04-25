@@ -9,6 +9,7 @@
 enum class GameState {
 	startScreen,
 	lobby,
+	mine,
 	paused
 };
 
@@ -31,5 +32,6 @@ private:
 	Player player{window};
 
 	Shop shop{window};
+	MineEntrance mineEntrance;
 };
 

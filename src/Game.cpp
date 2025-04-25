@@ -54,10 +54,31 @@ void Game::run() {
 						pauseMenu.resetDecision();
 					}
 				}
-				if (currentGameState == GameState::lobby && shop.shoppingStatus(lobby.playerLocation(player))){
-					if (event->is<sf::Event::MouseButtonPressed>()) {
-						if (event->getIf<sf::Event::MouseButtonPressed>()->button == sf::Mouse::Button::Left) {
-							shop.mouseClick(*event->getIf<sf::Event::MouseButtonPressed>());
+				if (currentGameState == GameState::lobby) {
+					if (lobby.playerLocation(player) == LobbyLocation::caveEntrance) {
+						if (event->is<sf::Event::KeyPressed>()) {
+							if (event->getIf<sf::Event::KeyPressed>()->scancode == sf::Keyboard::Scancode::E) {
+								currentGameState = GameState::mine;
+								player.resetPosition(window);
+							}
+						}
+					}
+					else{
+						if (lobby.playerLocation(player)!=LobbyLocation::Default){
+							if (!shop.getShoppingStatus()) {
+								if (event->is<sf::Event::KeyPressed>()) {
+									if (event->getIf<sf::Event::KeyPressed>()->scancode == sf::Keyboard::Scancode::E) {
+										shop.setShoppingStatus(true);
+									}
+								}
+							}
+							else {
+								if (event->is<sf::Event::MouseButtonPressed>()) {
+									if (event->getIf<sf::Event::MouseButtonPressed>()->button == sf::Mouse::Button::Left) {
+										shop.mouseClick(*event->getIf<sf::Event::MouseButtonPressed>());
+									}
+								}
+							}
 						}
 					}
 				}
@@ -73,15 +94,25 @@ void Game::run() {
 				lobby.draw(window);
 				player.draw(window);
 				if (lobby.playerLocation(player)!=LobbyLocation::Default) {
-					if (!shop.shoppingStatus(lobby.playerLocation(player))) {
-						shop.interact(window,caveatFont);
-						shop.keyPressed();
+					if (lobby.playerLocation(player) == LobbyLocation::caveEntrance) {
+						mineEntrance.interact(window,caveatFont);
 					}
-					else {
-						shop.draw(window);
+					else{
+						if (!shop.getShoppingStatus()) {
+							shop.interact(window, caveatFont);
+						}
+						else {
+							shop.draw(window,caveatFont,lobby.getName(lobby.playerLocation(player)));
+						}
 					}
-
 				}
+				else {
+					shop.setShoppingStatus(false);
+				}
+				break;
+			case GameState::mine:
+				player.movement();
+				player.draw(window);
 				break;
 			case GameState::paused:
 				pauseMenu.draw(window);
@@ -90,6 +121,6 @@ void Game::run() {
 				throw std::runtime_error("Invalid game state");
 		}
 		window.display();
+		}
 	}
-}
 

@@ -59,21 +59,32 @@ void PauseMenu::mouseMove(sf::Event::MouseMoved const& e) {
 		}
 	}
 }
+
 /*============================= Shop =============================*/
 
 Shop::Shop(sf::RenderWindow& window) {
 	shopOverlay.setSize(sf::Vector2f{1024,1024});
 	shopOverlay.setFillColor(sf::Color::Red);
-	shopOverlay.setOrigin({ static_cast<float>(shopOverlay.getLocalBounds().size.x / 2),static_cast<float>(shopOverlay.getLocalBounds().size.y) / 2 });
+	shopOverlay.setOrigin({ static_cast<float>(shopOverlay.getLocalBounds().size.x / 2),static_cast<float>(shopOverlay.getLocalBounds().size.y / 2)});
 	shopOverlay.setPosition({ static_cast<float>(window.getSize().x / 2),static_cast<float>(window.getSize().y / 2)});
 
 	shopCloseButton.setSize(sf::Vector2f{ 64,64 });
 	shopCloseButton.setFillColor(sf::Color::Black);
-	shopCloseButton.setOrigin({ static_cast<float>(shopCloseButton.getLocalBounds().size.x / 2) + 32,static_cast<float>(shopCloseButton.getLocalBounds().size.y) / 2 });
+	shopCloseButton.setOrigin({ static_cast<float>(shopCloseButton.getLocalBounds().size.x / 2) + 32,static_cast<float>(shopCloseButton.getLocalBounds().size.y / 2)});
 	shopCloseButton.setPosition({ static_cast<float>(shopOverlay.getSize().x / 2 + shopOverlay.getPosition().x),static_cast<float>(shopOverlay.getPosition().y / 2)});
+
+	shopItemFrame_1.setSize(sf::Vector2f{ 256,256 });
+	shopItemFrame_1.setFillColor(sf::Color(74, 74, 74));
+	shopItemFrame_1.setOrigin({ static_cast<float>(shopItemFrame_1.getLocalBounds().size.x / 2),static_cast<float>(shopItemFrame_1.getLocalBounds().size.y / 2)});
+	shopItemFrame_1.setPosition({ static_cast<float>(shopOverlay.getPosition().x-shopOverlay.getSize().x / 2 + shopItemFrame_1.getSize().x), static_cast<float>((shopOverlay.getPosition().y + shopOverlay.getPosition().y) / 2 + shopItemFrame_1.getSize().y)});
+
+	shopItemFrame_2.setSize(sf::Vector2f{ 256,256 });
+	shopItemFrame_2.setFillColor(sf::Color(74, 74, 74));
+	shopItemFrame_2.setOrigin({ static_cast<float>(shopItemFrame_2.getLocalBounds().size.x / 2),static_cast<float>(shopItemFrame_2.getLocalBounds().size.y / 2) });
+	shopItemFrame_2.setPosition({ static_cast<float>(shopOverlay.getPosition().x + shopOverlay.getSize().x / 2 - shopItemFrame_2.getSize().x), static_cast<float>((shopOverlay.getPosition().y + shopOverlay.getPosition().y) / 2 + shopItemFrame_2.getSize().y)});
 }
 
-void Shop::interact(sf::RenderWindow& window, const sf::Font& font) {
+void Shop::interact(sf::RenderWindow& window, sf::Font& font) {
 	if (!isOpen) {
 		sf::Text text{ font,"Press E to interact",128 };
 		text.setFillColor(sf::Color::White);
@@ -83,22 +94,17 @@ void Shop::interact(sf::RenderWindow& window, const sf::Font& font) {
 	}
 }
 
-void Shop::keyPressed() {
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::E)) {
-		isOpen = true;;
-	}
-}
-
-void Shop::draw(sf::RenderWindow& window) {
+void Shop::draw(sf::RenderWindow& window, sf::Font& font, std::string name) {
+	sf::Text text{ font,name,256 };
+	text.setFillColor(sf::Color::White);
+	text.setOrigin({ static_cast<float>(text.getLocalBounds().size.x / 2),static_cast<float>(text.getLocalBounds().size.y) / 2 });
+	text.setPosition({ static_cast<float>(shopOverlay.getPosition().x),static_cast<float>(shopOverlay.getPosition().y - shopOverlay.getSize().y * 0.375) });
 	window.draw(shopOverlay);
 	window.draw(shopCloseButton);
-}
+	window.draw(shopItemFrame_1);
+	window.draw(shopItemFrame_2);
+	window.draw(text);
 
-bool Shop::shoppingStatus(LobbyLocation location) {
-	if (isOpen == true && location == LobbyLocation::Default) {
-		isOpen = false;
-	}
-	return isOpen;
 }
 
 void Shop::mouseClick(sf::Event::MouseButtonPressed const& e) {
@@ -108,3 +114,22 @@ void Shop::mouseClick(sf::Event::MouseButtonPressed const& e) {
 		}
 	}
 }
+
+bool Shop::getShoppingStatus() {
+	return isOpen;
+}
+void Shop::setShoppingStatus(bool status) {
+	isOpen = status;
+}
+
+/*============================= Mine =============================*/
+
+void MineEntrance::interact(sf::RenderWindow& window, sf::Font& font) {
+	sf::Text text{font,"Press E to enter",128};
+	text.setFillColor(sf::Color::White);
+	text.setOrigin({ static_cast<float>(text.getLocalBounds().size.x / 2),static_cast<float>(text.getLocalBounds().size.y) / 2 });
+	text.setPosition({ static_cast<float>(window.getSize().x / 2),static_cast<float>(window.getSize().y) - 256 });
+	window.draw(text);
+}
+
+

@@ -9,7 +9,7 @@ enum class LobbyLocation {
 	armory,
 	doctor,
 	wizard,
-	mineEntrance,
+	caveEntrance,
 	Default
 };
 
@@ -18,6 +18,7 @@ public:
 	Lobby(const sf::RenderWindow& window);
 	void draw(sf::RenderWindow& window) const;
 	LobbyLocation playerLocation(const Player& player);
+	std::string getName(LobbyLocation location);
 private:
 	LobbyLocation location = LobbyLocation::Default;
 
@@ -25,5 +26,9 @@ private:
 	sf::RectangleShape armory;
 	sf::RectangleShape doctor;
 	sf::RectangleShape wizard;
-	sf::RectangleShape mineEntrance;
+	sf::RectangleShape caveEntrance;
+};
+
+class Cave {
+	
 };
