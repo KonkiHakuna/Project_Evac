@@ -21,7 +21,7 @@ FetchContent_Declare(
         GIT_TAG 11.1.4
 )
 FetchContent_MakeAvailable(fmt)
-add_executable(Project_Evac src/main.cpp src/Game.cpp src/Game.h src/Map.cpp src/Map.h src/Player.cpp src/Player.h src/UI.cpp src/UI.h)
+add_executable(Project_Evac src/main.cpp src/Game.cpp src/Game.h src/Map.cpp src/Map.h src/Player.cpp src/Player.h src/UI.cpp src/UI.h "src/Item.cpp" "src/Item.h")
 target_link_libraries(Project_Evac SFML::Graphics SFML::Window SFML::System fmt)
 
 add_custom_command(TARGET Project_Evac POST_BUILD

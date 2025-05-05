@@ -29,9 +29,13 @@ private:
 	StartScreen startScreen{ window, caveatFont };
 
 	Lobby lobby{window};
-	Player player{window};
-
-	Shop shop{window};
+	Shop shop{ window,caveatFont };
 	MineEntrance mineEntrance;
+
+	Player player{window};
+	Inventory inventory;
+	HUD hud{ window,caveatFont };
+	InventoryUI inventoryUI{window,caveatFont};
+
 };
 
