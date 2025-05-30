@@ -20,7 +20,7 @@ void StartScreen::draw(sf::RenderWindow& window) {
 
 /*============================= Pause Menu =============================*/
 
-PauseMenu::PauseMenu(sf::RenderWindow& window, sf::Font& font) : options{"Resume","Quit"}{
+PauseMenu::PauseMenu(sf::RenderWindow& window, sf::Font& font) : options{"Resume","Quit"},saveInformations(font,"Press K to save | Press L to load",128){
 	float y = 0;
 	for (const auto& option : options) {
 		sf::Text text(font,option,128);
@@ -30,12 +30,16 @@ PauseMenu::PauseMenu(sf::RenderWindow& window, sf::Font& font) : options{"Resume
 		menuOptions.push_back(text);
 		y += 150;
 	}
+	saveInformations.setFillColor(sf::Color::White);
+	saveInformations.setOrigin({ saveInformations.getLocalBounds().size.x / 2,saveInformations.getLocalBounds().size.y / 2 });
+	saveInformations.setPosition({ static_cast<float>(window.getSize().x / 2),static_cast<float>(128)});
 }
 
 void PauseMenu::draw(sf::RenderWindow& window) const {
 	for (const auto& option : menuOptions) {
 		window.draw(option);
 	}
+	window.draw(saveInformations);
 }
 
 void PauseMenu::mouseClick(sf::Event::MouseButtonPressed const& e) {  
@@ -90,12 +94,12 @@ Shop::Shop(sf::RenderWindow& window, sf::Font& font) : shopTitle(font) {
 }
 
 void Shop::initializeShopItems() {
-	shopItems[LobbyLocation::weaponShop].emplace_back(std::make_unique<Weapon>("Sword", "assets/items/weapons/sword.png", 10, 32), 50);
-	shopItems[LobbyLocation::weaponShop].emplace_back(std::make_unique<Weapon>("Bow", "assets/items/weapons/bow.png", 7, 128), 50);
+	shopItems[LobbyLocation::weaponShop].emplace_back(std::make_unique<Weapon>("Sword", "assets/items/weapons/sword.png", 100, true), 50);
+	shopItems[LobbyLocation::weaponShop].emplace_back(std::make_unique<Weapon>("Bow", "assets/items/weapons/bow.png", 25, false), 50);
 	shopItems[LobbyLocation::armory].emplace_back(std::make_unique<Armor>("Helmet", "assets/items/armor/helmet.png", 15), 50);
 	shopItems[LobbyLocation::armory].emplace_back(std::make_unique<Armor>("Chestplate", "assets/items/armor/chestplate.png", 25), 50);
-	shopItems[LobbyLocation::doctor].emplace_back(std::make_unique<Potion>("Health Potion", "assets/items/potions/health_potion.png", 50), 50);
-	shopItems[LobbyLocation::doctor].emplace_back(std::make_unique<Potion>("Mana Potion", "assets/items/potions/mana_potion.png", 50), 50);
+	shopItems[LobbyLocation::doctor].emplace_back(std::make_unique<Potion>("Health Potion", "assets/items/potions/health_potion.png", 50, TypeOfPotion::Healing), 50);
+	shopItems[LobbyLocation::doctor].emplace_back(std::make_unique<Potion>("Mana Potion", "assets/items/potions/mana_potion.png", 50, TypeOfPotion::Mana), 50);
 	shopItems[LobbyLocation::wizard].emplace_back(std::make_unique<Spell>("Fireball", "assets/items/spells/fireball.png", 15, 30), 50);
 	shopItems[LobbyLocation::wizard].emplace_back(std::make_unique<Spell>("Lightning Bolt", "assets/items/spells/lightning_bolt.png", 25, 40), 50);
 }
@@ -178,19 +182,14 @@ void Shop::buyItem(int itemFrame, Inventory& inventory) {
 	}
 }
 
-/*============================= Mine Entrance =============================*/
-
-void MineEntrance::interact(sf::RenderWindow& window, sf::Font& font) {
-	sf::Text text{font,"Press E to enter",128};
-	text.setFillColor(sf::Color::White);
-	text.setOrigin({ text.getLocalBounds().size.x / 2,text.getLocalBounds().size.y / 2 });
-	text.setPosition({ static_cast<float>(window.getSize().x / 2),static_cast<float>(window.getSize().y) - 256 });
-	window.draw(text);
+void Shop::resetShopItems() {
+	shopItems.clear();
+	initializeShopItems();
 }
 
 /*============================= Inventory =============================*/
 
-InventoryUI::InventoryUI(sf::RenderWindow& window, sf::Font& font) : inventoryTitle(font,"Inventory",256) {
+InventoryUI::InventoryUI(sf::RenderWindow& window, sf::Font& font, InventoryItemOptions& options) : inventoryTitle(font,"Inventory",256), itemOptions(options) {
 	inventoryOverlay.setSize(sf::Vector2f{ 1536,1024 });
 	inventoryOverlay.setFillColor(sf::Color::Red);
 	inventoryOverlay.setOrigin({inventoryOverlay.getLocalBounds().size.x / 2,inventoryOverlay.getLocalBounds().size.y / 2});
@@ -198,8 +197,8 @@ InventoryUI::InventoryUI(sf::RenderWindow& window, sf::Font& font) : inventoryTi
 
 	inventoryCloseButton.setSize(sf::Vector2f{ 64,64 });
 	inventoryCloseButton.setFillColor(sf::Color::Black);
-	inventoryCloseButton.setOrigin({inventoryCloseButton.getLocalBounds().size.x / 2 + 32,inventoryCloseButton.getLocalBounds().size.y / 2});
-	inventoryCloseButton.setPosition({ static_cast<float>(inventoryOverlay.getSize().x / 2 + inventoryOverlay.getPosition().x),static_cast<float>(inventoryOverlay.getPosition().y / 2) });
+	inventoryCloseButton.setOrigin({inventoryCloseButton.getLocalBounds().size.x / 2,inventoryCloseButton.getLocalBounds().size.y / 2});
+	inventoryCloseButton.setPosition({ static_cast<float>(inventoryOverlay.getSize().x / 2 + inventoryOverlay.getPosition().x) - 32,static_cast<float>(inventoryOverlay.getPosition().y / 2) });
 
 	inventoryTitle.setFillColor(sf::Color::White);
 	inventoryTitle.setOrigin({inventoryTitle.getLocalBounds().size.x / 2,inventoryTitle.getLocalBounds().size.y / 2});
@@ -238,11 +237,25 @@ void InventoryUI::draw(sf::RenderWindow& window, Inventory& inventory) {
 	}
 }
 
-void InventoryUI::mouseClick(sf::Event::MouseButtonPressed const& e) {
+void InventoryUI::mouseClick(sf::Event::MouseButtonPressed const& e, Inventory& inventory) {
 	if (e.button == sf::Mouse::Button::Left) {
 		if (inventoryCloseButton.getGlobalBounds().contains({ static_cast<float>(e.position.x),static_cast<float>(e.position.y) })) {
-			isOpen = false;
+			setInventoryStatus(false);
 			inventoryCloseButton.setFillColor(sf::Color::Black);
+			itemOptions.setChoosingStatus(false);
+		}
+		else {
+			if (!itemOptions.getChoosingStatus()){
+				for (int i=0;i<itemSlots.size();i++) {
+					if (itemSlots[i].getGlobalBounds().contains({ static_cast<float>(e.position.x),static_cast<float>(e.position.y) })) {
+						if (i<inventory.getItems().size()) {
+							itemOptions.setChoosingStatus(true);
+							itemOptions.setPosition(getSlotPosition(itemSlots[i]));
+							itemOptions.setSelectedItem(inventory.getItems()[i]);
+						}
+					}
+				}
+			}
 		}
 	}
 }
@@ -256,7 +269,7 @@ void InventoryUI::mouseMove(sf::Event::MouseMoved const& e) {
 	}
 }
 
-bool InventoryUI::getInventoryStatus() {
+bool InventoryUI::getInventoryStatus() const {
 	return isOpen;
 }
 
@@ -264,6 +277,105 @@ void InventoryUI::setInventoryStatus(bool status) {
 	isOpen = status;
 }
 
+sf::Vector2f InventoryUI::getSlotPosition(sf::RectangleShape slot) {
+	return slot.getPosition();
+}
+
+/*============================= Item Options =============================*/
+
+InventoryItemOptions::InventoryItemOptions(sf::RenderWindow& window, sf::Font& font) {
+	choicesOverlay.setSize(sf::Vector2f{384,256});
+	choicesOverlay.setFillColor(sf::Color::Green);
+	choicesOverlay.setOrigin({choicesOverlay.getLocalBounds().size.x / 2, choicesOverlay.getLocalBounds().size.y / 2});
+	sf::Text text={font,"",128};
+	text.setFillColor(sf::Color::White);
+	text.setOrigin({ text.getLocalBounds().size.x / 2, text.getLocalBounds().size.y / 2 });
+	for (int i = 0; i<2; i++) {
+		if (i%2==0) {
+			text.setString("Equip");
+			choicesText.push_back(text);
+		}
+		else {
+			text.setString("Remove");
+			choicesText.push_back(text);
+		}
+	}
+	optionsCloseButton.setSize(sf::Vector2f{ 32,32 });
+	optionsCloseButton.setFillColor(sf::Color::Black);
+	optionsCloseButton.setOrigin({ optionsCloseButton.getLocalBounds().size.x / 2,optionsCloseButton.getLocalBounds().size.y / 2 });
+}
+
+void InventoryItemOptions::draw(sf::RenderWindow& window) {
+	window.draw(choicesOverlay);
+	window.draw(optionsCloseButton);
+	for (int i = 0; i < choicesText.size(); i++) {
+		window.draw(choicesText[i]);
+	}
+}
+
+bool InventoryItemOptions::getChoosingStatus() {
+	return isChoosing;
+}
+
+void InventoryItemOptions::setChoosingStatus(bool status) {
+	isChoosing = status;
+}
+
+void InventoryItemOptions::setPosition(sf::Vector2f pos) {
+	choicesOverlay.setPosition({pos.x,pos.y + 256});
+	optionsCloseButton.setPosition({ static_cast<float>(choicesOverlay.getPosition().x + choicesOverlay.getSize().x / 2) - 16,static_cast<float>(choicesOverlay.getPosition().y - choicesOverlay.getSize().y / 2) + 16 });
+	for (int i = 0; i < choicesText.size(); i++) {
+		if (i % 2 == 0) {
+			choicesText[i].setPosition({ static_cast<float>(choicesOverlay.getPosition().x - choicesOverlay.getSize().x / 2),static_cast<float>(choicesOverlay.getPosition().y - choicesOverlay.getSize().y / 2 - 32)});
+		}
+		else {
+			choicesText[i].setPosition({static_cast<float>(choicesOverlay.getPosition().x - choicesOverlay.getSize().x / 2),static_cast<float>(choicesOverlay.getPosition().y - 32)});
+		}
+	}
+}
+
+void InventoryItemOptions::mouseClick(sf::Event::MouseButtonPressed const& e, Player& player, Inventory& inventory) {
+	if (e.button == sf::Mouse::Button::Left) {
+		if (optionsCloseButton.getGlobalBounds().contains({ static_cast<float>(e.position.x),static_cast<float>(e.position.y) })) {
+			setChoosingStatus(false);
+			optionsCloseButton.setFillColor(sf::Color::Black);
+		}
+		else {
+			for (int i = 0; i < choicesText.size(); i++) {
+				if (choicesText[i].getGlobalBounds().contains({ static_cast<float>(e.position.x),static_cast<float>(e.position.y) })) {
+					if (i == 0) {
+						selectedItem->equip(player, inventory);
+					}
+					else if (i == 1) {
+						inventory.removeItem(selectedItem);
+					}
+					setChoosingStatus(false);
+				}
+			}
+		}
+	}
+}
+
+void InventoryItemOptions::mouseMove(sf::Event::MouseMoved const& e) {
+	for (int i = 0; i < choicesText.size();i++) {
+		if (choicesText[i].getGlobalBounds().contains({static_cast<float>(e.position.x),static_cast<float>(e.position.y)})) {
+			choicesText[i].setFillColor(sf::Color::Blue);
+		}
+		else {
+			choicesText[i].setFillColor(sf::Color::White);
+		}
+	}
+	if (optionsCloseButton.getGlobalBounds().contains({ static_cast<float>(e.position.x),static_cast<float>(e.position.y) })) {
+		optionsCloseButton.setFillColor(sf::Color::Blue);
+	}
+	else {
+		optionsCloseButton.setFillColor(sf::Color::Black);
+	}
+}
+
+void InventoryItemOptions::setSelectedItem(Item* item) {
+	selectedItem = item;
+}
 /*============================= HUD =============================*/
 
 HUD::HUD(sf::RenderWindow& window, sf::Font& font) : healthText(font), manaText(font), gold(font) {
@@ -286,18 +398,49 @@ HUD::HUD(sf::RenderWindow& window, sf::Font& font) : healthText(font), manaText(
 	currentWeaponSlot.setFillColor(sf::Color(74, 74, 74));
 	currentWeaponSlot.setOrigin({currentWeaponSlot.getLocalBounds().size.x / 2,currentWeaponSlot.getLocalBounds().size.y / 2});
 	currentWeaponSlot.setPosition({static_cast<float>(window.getSize().x) - 192,static_cast<float>(window.getSize().y) - 192});
+
+	currentArmorSlot.setSize(sf::Vector2f{ 256,256 });
+	currentArmorSlot.setFillColor(sf::Color(74, 74, 74));
+	currentArmorSlot.setOrigin({ currentArmorSlot.getLocalBounds().size.x / 2,currentArmorSlot.getLocalBounds().size.y / 2 });
+	currentArmorSlot.setPosition({ static_cast<float>(window.getSize().x) - 192,static_cast<float>(192)});
+
+	currentSpellSlot.setSize(sf::Vector2f{ 256,256 });
+	currentSpellSlot.setFillColor(sf::Color(74, 74, 74));
+	currentSpellSlot.setOrigin({ currentSpellSlot.getLocalBounds().size.x / 2,currentSpellSlot.getLocalBounds().size.y / 2 });
+	currentSpellSlot.setPosition({ static_cast<float>(192),static_cast<float>(window.getSize().y) - 192 });
 }
 
 void HUD::draw(sf::RenderWindow& window, Player& player, Inventory& inventory) {
 	healthText.setString("Health: " + std::to_string(player.getHealth()));
 	manaText.setString("Mana: " + std::to_string(player.getMana()));
 	gold.setString("Gold: " + std::to_string(inventory.getPlayerGold()));
-	auto currentItem = inventory.getCurrentWeapon();
-	currentItem->setPosition({ static_cast<float>(currentWeaponSlot.getPosition().x),static_cast<float>(currentWeaponSlot.getPosition().y) });
 	window.draw(healthText);
 	window.draw(manaText);
 	window.draw(gold);
 	window.draw(currentWeaponSlot);
-	currentItem->draw(window);
+	window.draw(currentArmorSlot);
+	window.draw(currentSpellSlot);
+	auto currentWeapon = inventory.getCurrentWeapon();
+	if (currentWeapon) {
+		currentWeapon->setPosition({ static_cast<float>(currentWeaponSlot.getPosition().x),static_cast<float>(currentWeaponSlot.getPosition().y) });
+		currentWeapon->draw(window);
+	}
+	auto currentArmor = inventory.getCurrentArmor();
+	if (currentArmor) {
+		currentArmor->setPosition({ static_cast<float>(currentArmorSlot.getPosition().x),static_cast<float>(currentArmorSlot.getPosition().y) });
+		currentArmor->draw(window);
+	}
+	auto currentSpell = inventory.getCurrentSpell();
+	if (currentSpell) {
+		currentSpell->setPosition({ static_cast<float>(currentSpellSlot.getPosition().x),static_cast<float>(currentSpellSlot.getPosition().y) });
+		currentSpell->draw(window);
+	}
 }
 
+void HUD::updateHealth(Player& player) {
+	healthText.setString("Health: " + std::to_string(player.getHealth()));
+}
+
+void HUD::updateMana(Player& player) {
+	manaText.setString("Mana: " + std::to_string(player.getMana()));
+}

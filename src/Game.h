@@ -5,11 +5,12 @@
 #include "Map.h"
 #include "UI.h"
 #include "Player.h"
+#include "Save.h"
 
 enum class GameState {
 	startScreen,
 	lobby,
-	mine,
+	cave,
 	paused
 };
 
@@ -20,7 +21,13 @@ public:
 private:
 	sf::RenderWindow window;
 	sf::VideoMode mode;
-	sf::Font caveatFont;
+	sf::Font caveatFont = []{
+		sf::Font caveatFontTemp;
+		if (!caveatFontTemp.openFromFile("assets/fonts/Caveat_font.ttf")) {
+			throw std::exception("Failed to load font");
+		}
+		return caveatFontTemp;
+		}();
 
 	GameState currentGameState = GameState::startScreen;
 	GameState previousGameState = GameState::startScreen;
@@ -30,12 +37,14 @@ private:
 
 	Lobby lobby{window};
 	Shop shop{ window,caveatFont };
-	MineEntrance mineEntrance;
 
 	Player player{window};
 	Inventory inventory;
 	HUD hud{ window,caveatFont };
-	InventoryUI inventoryUI{window,caveatFont};
+	InventoryItemOptions inventoryItemOptions{ window,caveatFont };
+	InventoryUI inventoryUI{window,caveatFont,inventoryItemOptions};
+	Cave cave{ window ,caveatFont};
 
+	Save save;
 };
 

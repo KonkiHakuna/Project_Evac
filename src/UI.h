@@ -26,6 +26,7 @@ public:
 private:
 	std::vector<std::string> options;
 	std::vector<sf::Text> menuOptions;
+	sf::Text saveInformations;
 	int decision=NULL;
 };
 
@@ -41,6 +42,7 @@ public:
 	void setShoppingStatus(bool status);
 	void setCurrentShopLocation(LobbyLocation location);
 	void buyItem(int itemFrame, Inventory& inventory);
+	void resetShopItems();
 private:
 	bool isOpen = false;
 	sf::Text shopTitle;
@@ -52,38 +54,54 @@ private:
 	LobbyLocation currentShopLocation = LobbyLocation::Default;
 };
 
-class MineEntrance {
+class InventoryItemOptions {
 public:
-	void interact(sf::RenderWindow& window, sf::Font& font);
+	InventoryItemOptions(sf::RenderWindow& window, sf::Font& font);
+	void draw(sf::RenderWindow& window);
+	bool getChoosingStatus();
+	void setChoosingStatus(bool status);
+	void setPosition(sf::Vector2f);
+	void mouseClick(sf::Event::MouseButtonPressed const& e, Player& player, Inventory& inventory);
+	void mouseMove(sf::Event::MouseMoved const& e);
+	void setSelectedItem(Item* item);
+private:
+	bool isChoosing = false;
+	sf::RectangleShape optionsCloseButton;
+	std::vector<sf::Text> choicesText;
+	std::vector<sf::RectangleShape> choicesButton;
+	sf::RectangleShape choicesOverlay;
+	Item* selectedItem = nullptr;
 };
 
 class InventoryUI {
 public:
-	InventoryUI(sf::RenderWindow& window, sf::Font& font);
+	InventoryUI(sf::RenderWindow& window, sf::Font& font, InventoryItemOptions& options);
 	void draw(sf::RenderWindow& window, Inventory& inventory);
-	void mouseClick(sf::Event::MouseButtonPressed const& e);
+	void mouseClick(sf::Event::MouseButtonPressed const& e, Inventory& inventory);
 	void mouseMove(sf::Event::MouseMoved const& e);
-	bool getInventoryStatus();
+	bool getInventoryStatus() const;
 	void setInventoryStatus(bool status);
+	sf::Vector2f getSlotPosition(sf::RectangleShape slot);
 private:
 	bool isOpen = false;
 	sf::Text inventoryTitle;
 	sf::RectangleShape inventoryOverlay;
 	sf::RectangleShape inventoryCloseButton;
-	sf::RectangleShape itemSlot;
 	std::vector<sf::RectangleShape> itemSlots;
+	sf::RectangleShape itemSlot;
+	InventoryItemOptions& itemOptions;
 };
 
 class HUD {
 public:
 	HUD(sf::RenderWindow& window, sf::Font& font);
 	void draw(sf::RenderWindow& window, Player& player, Inventory& inventory);
-	//void mouseClick(sf::Event::MouseButtonPressed const& e);
-	//void mouseMove(sf::Event::MouseMoved const& e);
-	void updateHealth(int health);
-	void updateMana(int mana);
+	void updateHealth(Player& player);
+	void updateMana(Player& player);
 private:
 	sf::RectangleShape currentWeaponSlot;
+	sf::RectangleShape currentArmorSlot;
+	sf::RectangleShape currentSpellSlot;
 	sf::Text healthText;
 	sf::Text manaText;
 	sf::Text gold;

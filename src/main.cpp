@@ -1,6 +1,7 @@
 
 #include "Game.h"
 #include <iostream>
+#include <ctime>
 
 int main() {
 	try {
