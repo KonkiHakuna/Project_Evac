@@ -1,4 +1,7 @@
 ﻿cmake_minimum_required(VERSION 3.29)
+
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+
 project(Project_Evac)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -21,10 +24,31 @@ FetchContent_Declare(
         GIT_TAG 11.1.4
 )
 FetchContent_MakeAvailable(fmt)
-add_executable(Project_Evac src/main.cpp src/Game.cpp src/Game.h src/Map.cpp src/Map.h src/Player.cpp src/Player.h src/UI.cpp src/UI.h "src/Item.cpp" "src/Item.h" "src/enemy.h" "src/Enemy.cpp" "src/Save.cpp" "src/Save.h")
+add_executable(Project_Evac src/main.cpp 
+    src/core/Game.cpp src/core/Game.h
+    src/entities/Enemy.cpp src/entities/Enemy.h
+    src/entities/Player.cpp src/entities/Player.h
+    src/gameplay/Inventory.cpp src/gameplay/Inventory.h
+    src/gameplay/Item.cpp src/gameplay/Item.h
+    src/ui/HUD.cpp src/ui/HUD.h
+    src/ui/InventoryItemOptions.cpp src/ui/InventoryItemOptions.h
+    src/ui/InventoryUI.cpp src/ui/InventoryUI.h
+    src/ui/PauseMenu.cpp src/ui/PauseMenu.h
+    src/ui/Shop.cpp src/ui/Shop.h
+    src/ui/StartScreen.cpp src/ui/StartScreen.h
+    src/world/Lobby.cpp src/world/Lobby.h
+    src/world/Cave.cpp src/world/Cave.h
+    src/save/Save.cpp src/save/Save.h
+)
+
+target_include_directories(Project_Evac PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
 target_link_libraries(Project_Evac SFML::Graphics SFML::Window SFML::System fmt)
 
 add_custom_command(TARGET Project_Evac POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:Project_Evac>/assets
 )
+

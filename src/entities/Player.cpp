@@ -1,14 +1,11 @@
 
 #include "Player.h"
-
-#include <iostream>
-
 #include "Enemy.h"
-#include "Item.h"
+#include "gameplay/Inventory.h"
 
 /*============================= Player =============================*/
 
-Player::Player(sf::RenderWindow& window) : health(100), mana(100), defense(0) {
+Player::Player(sf::RenderWindow& window) : health(100), mana(100), defence(0) {
 	player.setRadius(64);
 	player.setFillColor(sf::Color::Green);
 	player.setOrigin({player.getRadius(), player.getRadius()});
@@ -44,6 +41,26 @@ void Player::movementBounds() {
 	}
 	if (player.getPosition().y > 1920) {
 		player.setPosition({ player.getPosition().x,1920 });
+	}
+}
+
+void Player::dash() {
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::LShift)) {
+		if (mana >= 20) {
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::W)) {
+				player.move({ 0,-256 });
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S)) {
+				player.move({ 0,256 });
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A)) {
+				player.move({ -256,0 });
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D)) {
+				player.move({ 256,0 });
+			}
+			setMana(20, '-');
+		}
 	}
 }
 
@@ -94,10 +111,7 @@ void Player::setHealth(int value, char op) {
 		default:
 			throw std::invalid_argument("Invalid operator");
 	}
-	if (health > 100 + defense) {
-		health = 100 + defense;
-	}
-	else if (health < 0) {
+	if (health < 0) {
 		health = 0;
 	}
 }
@@ -130,22 +144,21 @@ void Player::setMana(int value, char op) {
 	}
 }
 
-void Player::setDefense(int value) {
-	defense = value;
+void Player::setDefence(int value) {
+	defence = value;
 }
 
-int Player::getDefence() {
-	return defense;
+int Player::getDefence() const {
+	return defence;
 }
 
 void Player::attack(sf::Event::MouseButtonPressed const& e, Inventory& inventory, std::vector<std::unique_ptr<Enemy>>& enemies) {
 	if (e.button == sf::Mouse::Button::Left) {
-		if (attackTimer.getElapsedTime().asMilliseconds() >= 350) {
+		if (attackTimer.getElapsedTime().asMilliseconds() >= 500) {
 			if (dynamic_cast<Weapon*>(inventory.getCurrentWeapon())->isMelee()) {
 				attackPlayerHitbox.setOrigin({attackPlayerHitbox.getRadius(),attackPlayerHitbox.getRadius()});
 				attackPlayerHitbox.setPosition(player.getPosition());
 				drawAttackPlayerHitbox = true;
-				attackTimer.restart();
 				for (auto& enemy : enemies) {
 					if (attackPlayerHitbox.getGlobalBounds().findIntersection(enemy->getGlobalBounds())) {
 						enemy->setHealth(dynamic_cast<Weapon*>(inventory.getCurrentWeapon())->getDamage(),'-');
@@ -155,19 +168,20 @@ void Player::attack(sf::Event::MouseButtonPressed const& e, Inventory& inventory
 					if (enemies[i]->isDead()) {
 						switch (enemies[i]->getType()) {
 						case EnemyType::NORMAL:
-							inventory.setPlayerGold(8, '+');
+							inventory.setPlayerGold(4, '+');
 							break;
 						case EnemyType::QUICK:
-							inventory.setPlayerGold(6, '+');
+							inventory.setPlayerGold(2, '+');
 							break;
 						case EnemyType::TANK:
-							inventory.setPlayerGold(16, '+');
+							inventory.setPlayerGold(8, '+');
 							break;
 						case EnemyType::BOSS:
-							inventory.setPlayerGold(32, '+');
+							inventory.setPlayerGold(25, '+');
 							break;
 						default:;
 						}
+						setMana(5,'+');
 						enemies.erase(enemies.begin() + i);
 					}
 					else {
@@ -175,114 +189,11 @@ void Player::attack(sf::Event::MouseButtonPressed const& e, Inventory& inventory
 					}
 				}
 			}
-		}
+			attackTimer.restart();
+		//}
 		/*else if (e.button == sf::Mouse::Button::Right) {
 
 		}*/
-	}
-}
-
-/*============================= Inventory =============================*/
-
-Inventory::Inventory() : gold(50), currentArmor(nullptr), currentSpell(nullptr) {
-	addItem(std::make_unique<Weapon>("Stick", "assets/items/weapons/stick.png", 20, true));
-	currentWeapon = items[0].get();
-}
-
-void Inventory::addItem(std::unique_ptr<Item> item) {
-	items.push_back(std::move(item));
-}
-
-void Inventory::removeItem(Item* item) {
-	if (item == currentWeapon) {
-		currentWeapon = nullptr;
-	}
-	if (item == currentArmor) {
-		currentArmor = nullptr;
-	}
-	if (item == currentSpell) {
-		currentSpell = nullptr;
-	}
-	for (auto it = items.begin(); it != items.end(); ++it) {
-		if (it->get() == item) {
-			items.erase(it);
-			break;
 		}
 	}
-	if (!currentWeapon) {
-		for (auto& it : items) {
-			if (dynamic_cast<Weapon*>(it.get())) {
-				currentWeapon = it.get();
-				break;
-			}
-		}
-		if (!currentWeapon) {
-			addItem(std::make_unique<Weapon>("Stick", "assets/items/weapons/stick.png", 20, true));
-			currentWeapon = items[0].get();
-		}
-	}
-}
-
-Item* Inventory::getCurrentWeapon() {
-	return currentWeapon;
-}
-
-void Inventory::setCurrentWeapon(Item* weapon) {
-	currentWeapon = weapon;
-}
-
-Item* Inventory::getCurrentArmor() {
-	return currentArmor;
-}
-
-void Inventory::setCurrentArmor(Item* armor) {
-	currentArmor = armor;
-}
-
-Item* Inventory::getCurrentSpell() {
-	return currentSpell;
-}
-
-void Inventory::setCurrentSpell(Item* spell) {
-	currentSpell = spell;
-}
-
-int Inventory::getPlayerGold() {
-	return gold;
-}
-
-void Inventory::setPlayerGold(int value, char op) {
-	switch (op) {
-	case '+':
-		gold += value;
-		break;
-	case '-':
-		gold -= value;
-		break;
-	case '=':
-		gold = value;
-		break;
-	default:
-		throw std::exception("Invalid operator");
-	}
-}
-
-
-std::vector<Item*> Inventory::getItems() {
-	std::vector<Item*> tempItems;
-	for (auto& item : items) {
-		tempItems.push_back(item.get());
-	}
-	return tempItems;
-}
-
-sf::FloatRect Player::getGlobalBounds() const {
-	return player.getGlobalBounds();
-}
-
-void Inventory::clearItems() {
-	items.clear();
-	currentWeapon = nullptr;
-	currentArmor = nullptr;
-	currentSpell = nullptr;
 }

@@ -2,6 +2,8 @@
 #include <fstream>
 #include <string>
 
+#include "gameplay/Inventory.h"
+
 void Save::SaveGame(Player& player, Inventory& inventory) {
 	std::ofstream saveFile("save.txt");
 	if (!saveFile) {
@@ -9,7 +11,6 @@ void Save::SaveGame(Player& player, Inventory& inventory) {
 	}
 	saveFile << player.getHealth() << "\n";
 	saveFile << player.getMana() << "\n";
-	saveFile << player.getDefence() << "\n";
 	saveFile << inventory.getPlayerGold() << "\n";
 
 	for (auto& item : inventory.getItems()) {
@@ -17,7 +18,7 @@ void Save::SaveGame(Player& player, Inventory& inventory) {
 			saveFile << "Weapon " << weapon->getName() << " " << weapon->getDamage() << " " << weapon->isMelee() << " " << weapon->getPath().string() << "\n";
 		}
 		else if (auto* armor = dynamic_cast<Armor*>(item)) {
-			saveFile << "Armor " << armor->getName() << " " << armor->getDefense() << " " << armor->getPath().string() << "\n";
+			saveFile << "Armor " << armor->getName() << " " << armor->getDefence() << " " << armor->getPath().string() << "\n";
 		}
 		else if (auto* potion = dynamic_cast<Potion*>(item)) {
 			saveFile << "Potion " << potion->getName() << " " << potion->getPower() << " " << static_cast<int>(potion->getType()) << " " << potion->getPath().string() << "\n";
@@ -34,12 +35,11 @@ void Save::LoadGame(Player& player, Inventory& inventory) {
 		throw std::exception("Failed to open save file");
 	}
 
-	int health, mana, defense, gold;
-	saveFile >> health >> mana >> defense >> gold;
+	int health, mana, gold;
+	saveFile >> health >> mana >> gold;
 
 	player.setHealth(health, '=');
 	player.setMana(mana, '=');
-	player.setDefense(defense);
 	inventory.setPlayerGold(gold, '=');
 	inventory.clearItems();
 
@@ -74,6 +74,5 @@ void Save::LoadGame(Player& player, Inventory& inventory) {
 			inventory.addItem(std::make_unique<Spell>(name, path, dmg, manaCost));
 		}
 	}
-
 	saveFile.close();
 }

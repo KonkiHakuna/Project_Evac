@@ -2,7 +2,6 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "Player.h"
 
 enum class EnemyType {
 	NORMAL,
@@ -10,7 +9,9 @@ enum class EnemyType {
 	TANK,
 	BOSS
 };
+
 class Player;
+
 class Enemy {
 public:
 	Enemy(EnemyType type, sf::Vector2f position);
@@ -21,6 +22,8 @@ public:
 	void draw(sf::RenderWindow& window) const;
 	bool isDead() const;
 	int getDamage() const;
+	void setPosition(sf::Vector2f position);
+	sf::Vector2f getPosition() const;
 	void attack(Player& player);
 	static std::vector<std::unique_ptr<Enemy>> createEnemies(int level);
 	sf::FloatRect getGlobalBounds() const;

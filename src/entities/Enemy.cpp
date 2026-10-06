@@ -1,7 +1,6 @@
 
 #include  "Enemy.h"
-
-#include <iostream>
+#include "Player.h"
 
 Enemy::Enemy(EnemyType type, sf::Vector2f position) : type(type){
 	initialize(type);
@@ -14,28 +13,28 @@ void Enemy::initialize(EnemyType type) {
 		enemy.setRadius(64);
 		enemy.setFillColor(sf::Color::Yellow);
 		damage = 15;
-		health = 100;
+		health = 200;
 		speed = 2;
 		break;
 	case EnemyType::QUICK:
 		enemy.setRadius(48);
 		enemy.setFillColor(sf::Color::Blue);
 		damage = 10;
-		health = 50;
+		health = 100;
 		speed = 5;
 		break;
 	case EnemyType::TANK:
 		enemy.setRadius(96);
 		enemy.setFillColor(sf::Color(153,0,0));
-		damage = 25;
-		health = 250;
+		damage = 50;
+		health = 500;
 		speed = 1;
 		break;
 	case EnemyType::BOSS:
 		enemy.setRadius(128);
 		enemy.setFillColor(sf::Color(153, 0, 76));
-		damage = 25;
-		health = 500;
+		damage = 75;
+		health = 2000;
 		speed = 1;
 		break;
 	default:
@@ -105,18 +104,27 @@ int Enemy::getDamage() const {
 	return damage;
 }
 
+void Enemy::setPosition(sf::Vector2f position) {
+	enemy.setPosition(position);
+}
+
+
+sf::Vector2f Enemy::getPosition() const {
+	return enemy.getPosition();
+}
+
 std::vector<std::unique_ptr<Enemy>> Enemy::createEnemies(int level) {
 	std::vector<std::unique_ptr<Enemy>>enemies;
 	std::vector<int>numberOfEnemies(4,0); // i=0 - normal | i=1 - quick | i=2 - tank | i=3 - boss
-	if (level == 2) {
+	if (level >= 2) {
 		numberOfEnemies[0] = 4;
 	}
 	else {
 		numberOfEnemies[0] = 3;
 	}
-	if (level>=5) {
+	if (level>=4) {
 		if (numberOfEnemies[1]<3) {
-			numberOfEnemies[1] = level - 4;
+			numberOfEnemies[1] = level - 3;
 		}
 	}
 	if (level>=7) {
@@ -166,8 +174,16 @@ EnemyType Enemy::getType() const {
 }
 
 void Enemy::attack(Player& player) {
-	if (enemy.getGlobalBounds().findIntersection(player.getGlobalBounds()) && attackCooldown.getElapsedTime().asSeconds() > 1) {
-		player.setHealth(getDamage(), '-');
+	if (enemy.getGlobalBounds().findIntersection(player.getGlobalBounds()) && attackCooldown.getElapsedTime().asSeconds() >= 1) {
+		if (player.getDefence()==25) {
+			player.setHealth(getDamage()-getDamage() / 4, '-');
+		}
+		else if (player.getDefence() == 50) {
+			player.setHealth(getDamage() / 2, '-');
+		}
+		else {
+			player.setHealth(getDamage(), '-');
+		}
 		attackCooldown.restart();
 	}
 }

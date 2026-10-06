@@ -2,8 +2,6 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "Player.h"
-
 enum class TypeOfPotion {
 	Healing,
 	Mana
@@ -42,12 +40,12 @@ private:
 
 class Armor : public Item {
 public:
-	Armor(std::string name, std::filesystem::path file, int defense);
+	Armor(std::string name, std::filesystem::path file, int defence);
 	void equip(Player& player, Inventory& inventory) override;
-	int getDefense();
+	int getDefence();
 
 private:
-	int defense;
+	int defence;
 };
 
 class Potion : public Item {

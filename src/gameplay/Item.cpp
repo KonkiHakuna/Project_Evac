@@ -1,6 +1,7 @@
 
 #include "Item.h"
-
+#include "gameplay/Inventory.h"
+#include "entities/Player.h"
 
 Item::Item(std::string name, std::filesystem::path file) : name(name), file(file), sprite(texture) {
 	if (!texture.loadFromFile(file)) {
@@ -39,13 +40,13 @@ int Weapon::getDamage() {
 	return damage;
 }
 
-Armor::Armor(std::string name, std::filesystem::path file, int defense) : Item(name, file), defense(defense) {}
+Armor::Armor(std::string name, std::filesystem::path file, int defence) : Item(name, file), defence(defence) {}
 void Armor::equip(Player& player, Inventory& inventory) {
 	inventory.setCurrentArmor(this);
-	player.setDefense(defense);
+	player.setDefence(defence);
 }
-int Armor::getDefense() {
-	return defense;
+int Armor::getDefence() {
+	return defence;
 }
 Potion::Potion(std::string name, std::filesystem::path file, int power, TypeOfPotion type) : Item(name, file), power(power), type(type) {}
 void Potion::equip(Player& player, Inventory& inventory) {

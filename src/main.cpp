@@ -1,7 +1,6 @@
 
-#include "Game.h"
+#include "core/Game.h"
 #include <iostream>
-#include <ctime>
 
 int main() {
 	try {

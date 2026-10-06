@@ -2,10 +2,16 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "Map.h"
-#include "UI.h"
-#include "Player.h"
-#include "Save.h"
+#include "entities/Player.h"
+#include "save/Save.h"
+#include "ui/shop.h"
+#include "ui/pausemenu.h"
+#include "ui/StartScreen.h"
+#include "ui/hud.h"
+#include "ui/InventoryUI.h"
+#include "gameplay/Inventory.h"
+#include "ui/inventoryItemOptions.h"
+#include "world/cave.h"
 
 enum class GameState {
 	startScreen,
