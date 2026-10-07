@@ -18,7 +18,7 @@ public:
 	void initialize(EnemyType type);
 	void movement(sf::Vector2f playerPosition);
 	int getHealth() const;
-	void setHealth(int value, char op);
+	void takeDamage(int damage);
 	void draw(sf::RenderWindow& window) const;
 	bool isDead() const;
 	int getDamage() const;

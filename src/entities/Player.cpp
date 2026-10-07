@@ -3,8 +3,6 @@
 #include "Enemy.h"
 #include "gameplay/Inventory.h"
 
-/*============================= Player =============================*/
-
 Player::Player(sf::RenderWindow& window) : health(100), mana(100), defence(0) {
 	player.setRadius(64);
 	player.setFillColor(sf::Color::Green);
@@ -59,7 +57,7 @@ void Player::dash() {
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D)) {
 				player.move({ 256,0 });
 			}
-			setMana(20, '-');
+			setMana(20);
 		}
 	}
 }
@@ -83,65 +81,68 @@ void Player::resetPosition(sf::RenderWindow& window) {
 	player.setPosition({ static_cast<float>(window.getSize().x / 2),static_cast<float>(window.getSize().y / 2) });
 }
 
-int Player::getHealth() {
+int Player::getHealth() const {
 	return health;
 }
 
-int Player::getMana() {
-	return mana;
-}
-
-void Player::setHealth(int value, char op) {
-	switch (op) {
-		case '+':
-			health += value;
-			break;
-		case '-':
-			health -= value;
-			break;
-		case '*':
-			health *= value;
-			break;
-		case '/':
-			health /= value;
-			break;
-		case '=':
-			health = value;
-			break;
-		default:
-			throw std::invalid_argument("Invalid operator");
+void Player::takeDamage(int damage) {
+	if (damage < 0) {
+		throw std::exception("Damage cannot be negative");
 	}
+
+	health -= damage;
+
 	if (health < 0) {
 		health = 0;
 	}
 }
 
-void Player::setMana(int value, char op) {
-	switch (op) {
-	case '+':
-		mana += value;
-		break;
-	case '-':
-		mana -= value;
-		break;
-	case '*':
-		mana *= value;
-		break;
-	case '/':
-		mana /= value;
-		break;
-	case '=':
-		mana = value;
-		break;
-	default:
-		throw std::exception("Invalid operator");
+void Player::heal(int amount) {
+	if (amount < 0) {
+		throw std::exception("Heal amount cannot be negative");
 	}
+
+	health += amount;
+
+	if (health > 100) {
+		health = 100;
+	}
+}
+
+void Player::setHealth(int newHealth) {
+	health = newHealth;
+}
+
+int Player::getMana() const {
+	return mana;
+}
+
+void Player::useMana(int amount) {
+	if (amount < 0) {
+		throw std::exception("Mana amount cannot be negative");
+	}
+
+	mana -= amount;
+
+	if (mana < 0) {
+		mana = 0;
+	}
+}
+
+void Player::restoreMana(int amount) {
+	if (amount < 0) {
+		throw std::exception("Mana amount cannot be negative");
+	}
+
+	mana += amount;
+
 	if (mana > 100) {
 		mana = 100;
 	}
-	else if (mana < 0) {
-		mana = 0;
-	}
+}
+
+void Player::setMana(int newMana) {
+	mana = newMana;
 }
 
 void Player::setDefence(int value) {
@@ -161,7 +162,7 @@ void Player::attack(sf::Event::MouseButtonPressed const& e, Inventory& inventory
 				drawAttackPlayerHitbox = true;
 				for (auto& enemy : enemies) {
 					if (attackPlayerHitbox.getGlobalBounds().findIntersection(enemy->getGlobalBounds())) {
-						enemy->setHealth(dynamic_cast<Weapon*>(inventory.getCurrentWeapon())->getDamage(),'-');
+						enemy->takeDamage(dynamic_cast<Weapon*>(inventory.getCurrentWeapon())->getDamage());
 					}
 				}
 				for (int i=0;i<enemies.size();) {
@@ -181,7 +182,7 @@ void Player::attack(sf::Event::MouseButtonPressed const& e, Inventory& inventory
 							break;
 						default:;
 						}
-						setMana(5,'+');
+						setMana(5);
 						enemies.erase(enemies.begin() + i);
 					}
 					else {
