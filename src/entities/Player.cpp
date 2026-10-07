@@ -3,7 +3,18 @@
 #include "Enemy.h"
 #include "gameplay/Inventory.h"
 
-Player::Player(sf::RenderWindow& window) : health(100), mana(100), defence(0) {
+Player::Player(sf::RenderWindow& window) : health(100), mana(100), defence(0), playerSprite(playerIdleTexture) {
+	if (!playerIdleTexture.loadFromFile("assets/entities/player/Warrior_idle.png")) {
+		throw std::exception("Failed to load player idle texture");
+	}
+	if (!playerRunTexture.loadFromFile("assets/entities/player/Warrior_run.png")) {
+		throw std::exception("Failed to load player run texture");
+	}
+	playerSprite.setTexture(playerIdleTexture, true);
+	playerSprite.setTextureRect({{0, 0}, {192, 192}});
+	playerSprite.setOrigin({ 96.f, 96.f });
+	playerSprite.setScale({ 2.5f, 2.5f });
+
 	player.setRadius(64);
 	player.setFillColor(sf::Color::Green);
 	player.setOrigin({player.getRadius(), player.getRadius()});
@@ -13,18 +24,24 @@ Player::Player(sf::RenderWindow& window) : health(100), mana(100), defence(0) {
 }
 
 void Player::movement() {
+	isMoving = false;
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::W)) {
 		player.move({0,-3});
+		isMoving = true;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S)) {
 		player.move({0,3});
+		isMoving = true;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A)) {
 		player.move({-3,0});
+		isMoving = true;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D)) {
 		player.move({3,0});
+		isMoving = true;
 	}
+	updateAnimation();
 }
 
 void Player::movementBounds() {
@@ -57,14 +74,50 @@ void Player::dash() {
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D)) {
 				player.move({ 256,0 });
 			}
-			setMana(20);
+			useMana(20);
 		}
 	}
 }
 
+void Player::updateAnimation() {
+	if (isMoving != wasMoving) {
+		if (isMoving) {
+			playerSprite.setTexture(playerRunTexture, true);
+		}
+		else {
+			playerSprite.setTexture(playerIdleTexture, true);
+		}
+
+		currentFrame = 0;
+
+		playerSprite.setTextureRect(
+			sf::IntRect({ 0, 0 }, { 192, 192 })
+		);
+
+		animationClock.restart();
+		wasMoving = isMoving;
+	}
+
+	int frameCount = isMoving ? 6 : 8;
+	float frameTime = isMoving ? 0.10f : 0.12f;
+
+	if (animationClock.getElapsedTime().asSeconds() >= frameTime) {
+		currentFrame = (currentFrame + 1) % frameCount;
+
+		playerSprite.setTextureRect(
+			sf::IntRect(
+				{ currentFrame * 192, 0 },
+				{ 192, 192 }
+			)
+		);
+
+		animationClock.restart();
+	}
+}
 
 void Player::draw(sf::RenderWindow& window) {
-	window.draw(player);
+	playerSprite.setPosition(player.getPosition());
+	window.draw(playerSprite);
 	if (drawAttackPlayerHitbox) {
 		window.draw(attackPlayerHitbox);
 	}
@@ -182,7 +235,7 @@ void Player::attack(sf::Event::MouseButtonPressed const& e, Inventory& inventory
 							break;
 						default:;
 						}
-						setMana(5);
+						restoreMana(5);
 						enemies.erase(enemies.begin() + i);
 					}
 					else {
