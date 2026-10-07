@@ -51,8 +51,12 @@ private:
 	bool isMoving = false;
 	bool wasMoving = false;
 	void updateAnimation();
+	bool facingRight = true;
 
 	sf::CircleShape attackPlayerHitbox;
 	sf::Clock attackTimer;
 	bool drawAttackPlayerHitbox = false;
+
+	sf::Texture playerAttackTexture;
+	bool isAttacking = false;
 };

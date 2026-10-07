@@ -10,6 +10,9 @@ Player::Player(sf::RenderWindow& window) : health(100), mana(100), defence(0), p
 	if (!playerRunTexture.loadFromFile("assets/entities/player/Warrior_run.png")) {
 		throw std::exception("Failed to load player run texture");
 	}
+	if (!playerAttackTexture.loadFromFile("assets/entities/player/Warrior_Attack1.png")) {
+		throw std::exception("Failed to load player attack texture");
+	}
 	playerSprite.setTexture(playerIdleTexture, true);
 	playerSprite.setTextureRect({{0, 0}, {192, 192}});
 	playerSprite.setOrigin({ 96.f, 96.f });
@@ -36,10 +39,18 @@ void Player::movement() {
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A)) {
 		player.move({-3,0});
 		isMoving = true;
+		facingRight = false;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D)) {
 		player.move({3,0});
 		isMoving = true;
+		facingRight = true;
+	}
+	if (facingRight) {
+		playerSprite.setScale({ 2.5f, 2.5f });
+	}
+	else {
+		playerSprite.setScale({ -2.5f, 2.5f });
 	}
 	updateAnimation();
 }
@@ -80,6 +91,35 @@ void Player::dash() {
 }
 
 void Player::updateAnimation() {
+	if (isAttacking) {
+		int attackFrameCount = 4;
+		float attackFrameTime = 0.08f;
+
+		if (animationClock.getElapsedTime().asSeconds() >= attackFrameTime) {
+			currentFrame++;
+
+			if (currentFrame >= attackFrameCount) {
+				isAttacking = false;
+				currentFrame = 0;
+
+				if (isMoving) {
+					playerSprite.setTexture(playerRunTexture, true);
+				}
+				else {
+					playerSprite.setTexture(playerIdleTexture, true);
+				}
+
+				playerSprite.setTextureRect(sf::IntRect({ 0, 0 }, { 192, 192 }));
+			}
+			else {
+				playerSprite.setTextureRect(sf::IntRect({ currentFrame * 192, 0 },{ 192, 192 }));
+			}
+
+			animationClock.restart();
+		}
+
+		return;
+	}
 	if (isMoving != wasMoving) {
 		if (isMoving) {
 			playerSprite.setTexture(playerRunTexture, true);
@@ -90,9 +130,7 @@ void Player::updateAnimation() {
 
 		currentFrame = 0;
 
-		playerSprite.setTextureRect(
-			sf::IntRect({ 0, 0 }, { 192, 192 })
-		);
+		playerSprite.setTextureRect(sf::IntRect({ 0, 0 }, { 192, 192 }));
 
 		animationClock.restart();
 		wasMoving = isMoving;
@@ -104,12 +142,7 @@ void Player::updateAnimation() {
 	if (animationClock.getElapsedTime().asSeconds() >= frameTime) {
 		currentFrame = (currentFrame + 1) % frameCount;
 
-		playerSprite.setTextureRect(
-			sf::IntRect(
-				{ currentFrame * 192, 0 },
-				{ 192, 192 }
-			)
-		);
+		playerSprite.setTextureRect(sf::IntRect({ currentFrame * 192, 0 }, { 192, 192 }));
 
 		animationClock.restart();
 	}
@@ -209,10 +242,23 @@ int Player::getDefence() const {
 void Player::attack(sf::Event::MouseButtonPressed const& e, Inventory& inventory, std::vector<std::unique_ptr<Enemy>>& enemies) {
 	if (e.button == sf::Mouse::Button::Left) {
 		if (attackTimer.getElapsedTime().asMilliseconds() >= 500) {
+
 			if (dynamic_cast<Weapon*>(inventory.getCurrentWeapon())->isMelee()) {
-				attackPlayerHitbox.setOrigin({attackPlayerHitbox.getRadius(),attackPlayerHitbox.getRadius()});
+				isAttacking = true;
+				currentFrame = 0;
+				playerSprite.setTexture(playerAttackTexture, true);
+				playerSprite.setTextureRect(sf::IntRect({ 0, 0 }, { 192, 192 }));
+
+				animationClock.restart();
+
+				attackPlayerHitbox.setOrigin({
+					attackPlayerHitbox.getRadius(),
+					attackPlayerHitbox.getRadius()
+					});
+
 				attackPlayerHitbox.setPosition(player.getPosition());
 				drawAttackPlayerHitbox = true;
+
 				for (auto& enemy : enemies) {
 					if (attackPlayerHitbox.getGlobalBounds().findIntersection(enemy->getGlobalBounds())) {
 						enemy->takeDamage(dynamic_cast<Weapon*>(inventory.getCurrentWeapon())->getDamage());
