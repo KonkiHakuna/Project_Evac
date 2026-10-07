@@ -12,6 +12,7 @@
 #include "gameplay/Inventory.h"
 #include "ui/inventoryItemOptions.h"
 #include "world/cave.h"
+#include "gameplay/Projectile.h"
 
 enum class GameState {
 	startScreen,
@@ -52,5 +53,7 @@ private:
 	Cave cave{ window ,caveatFont};
 
 	Save save;
+
+	std::vector<Projectile> projectiles;
 };
 
