@@ -17,7 +17,31 @@ void Save::SaveGame(Player& player, Inventory& inventory) {
 	saveData["inventory"]["gold"] = inventory.getPlayerGold();
 	saveData["inventory"]["items"] = json::array();
 
-	for (auto& item : inventory.getItems()) {
+	auto items = inventory.getItems();
+	int equippedWeapon = -1;
+	int equippedArmor = -1;
+	int equippedSpell = -1;
+
+	for (int i = 0; i < items.size(); ++i) {
+		if (items[i] == inventory.getCurrentWeapon()) {
+			equippedWeapon = i;
+		}
+
+		if (items[i] == inventory.getCurrentArmor()) {
+			equippedArmor = i;
+		}
+
+		if (items[i] == inventory.getCurrentSpell()) {
+			equippedSpell = i;
+		}
+	}
+	saveData["inventory"]["equipped"] = {
+		{"weapon", equippedWeapon},
+		{"armor", equippedArmor},
+		{"spell", equippedSpell}
+	};
+
+	for (auto& item : items) {
 		json itemData;
 		if (auto* weapon = dynamic_cast<Weapon*>(item)) {
 			itemData = {
@@ -108,5 +132,28 @@ void Save::LoadGame(Player& player, Inventory& inventory) {
 		else {
 			throw std::exception("Unknown item type in save file");
 		}
+	}
+
+	auto loadedItems = inventory.getItems();
+
+	int weaponIndex =
+		saveData.at("inventory").at("equipped").at("weapon").get<int>();
+
+	int armorIndex =
+		saveData.at("inventory").at("equipped").at("armor").get<int>();
+
+	int spellIndex =
+		saveData.at("inventory").at("equipped").at("spell").get<int>();
+
+	if (weaponIndex >= 0 && weaponIndex < loadedItems.size()) {
+		inventory.setCurrentWeapon(loadedItems[weaponIndex]);
+	}
+
+	if (armorIndex >= 0 && armorIndex < loadedItems.size()) {
+		inventory.setCurrentArmor(loadedItems[armorIndex]);
+	}
+
+	if (spellIndex >= 0 && spellIndex < loadedItems.size()) {
+		inventory.setCurrentSpell(loadedItems[spellIndex]);
 	}
 }
