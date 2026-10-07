@@ -12,7 +12,9 @@ Game::Game() : window(sf::VideoMode(sf::Vector2u{2880,1920}), "Evac", sf::Style:
 	window.setFramerateLimit(240);
 }
 void Game::run() {
+	sf::Clock frameClock;
 	while (window.isOpen()) {
+		float deltaTime = frameClock.restart().asSeconds();
 		while (auto const event = window.pollEvent()) {
 			if (event->is<sf::Event::Closed>()) {
 				window.close();
@@ -66,6 +68,7 @@ void Game::run() {
 								currentGameState = GameState::cave;
 								player.resetPosition(window);
 								cave.clear();
+								projectiles.clear();
 							}
 						}
 					}
@@ -127,7 +130,8 @@ void Game::run() {
 				}
 				if (currentGameState == GameState::cave) {
 					if (event->is<sf::Event::MouseButtonPressed>()) {
-						player.attack(*event->getIf<sf::Event::MouseButtonPressed>(), inventory, cave.getEnemies());
+						player.attack(*event->getIf<sf::Event::MouseButtonPressed>(), inventory, cave.getEnemies(), 
+							projectiles, window.mapPixelToCoords(event->getIf<sf::Event::MouseButtonPressed>()->position));
 					}
 					if (event->is<sf::Event::KeyPressed>()) {
 						if (event->getIf<sf::Event::KeyPressed>()->scancode == sf::Keyboard::Scancode::LShift) {
@@ -137,11 +141,13 @@ void Game::run() {
 					if (cave.getCurrentWave()>10) {
 						currentGameState = GameState::lobby;
 						cave.clear();
+						projectiles.clear();
 						player.resetPosition(window);
 					}
 					if (player.getHealth()==0) {
 						currentGameState = GameState::lobby;
 						cave.clear();
+						projectiles.clear();
 						player.setHealth(50);
 						if (player.getMana()<50) {
 							player.setMana(50);
@@ -329,6 +335,61 @@ void Game::run() {
 							enemy->attack(player);
 							enemy->draw(window);
 						}
+					}
+				}
+
+				for (int i = 0; i < projectiles.size();) {
+					projectiles[i].update(deltaTime);
+
+					bool removeProjectile = false;
+
+					for (std::size_t j = 0; j < enemies.size(); ++j) {
+						if (projectiles[i].getGlobalBounds().findIntersection(enemies[j]->getGlobalBounds())) 
+						{enemies[j]->takeDamage(projectiles[i].getDamage());
+
+							removeProjectile = true;
+
+							if (enemies[j]->isDead()) {
+								switch (enemies[j]->getType()) {
+								case EnemyType::NORMAL:
+									inventory.setPlayerGold(4, '+');
+									break;
+
+								case EnemyType::QUICK:
+									inventory.setPlayerGold(2, '+');
+									break;
+
+								case EnemyType::TANK:
+									inventory.setPlayerGold(8, '+');
+									break;
+
+								case EnemyType::BOSS:
+									inventory.setPlayerGold(25, '+');
+									break;
+								}
+
+								player.restoreMana(5);
+
+								enemies.erase(enemies.begin() + j);
+							}
+
+							break;
+						}
+					}
+
+					sf::Vector2f projectilePosition =
+						projectiles[i].getPosition();
+
+					if (projectilePosition.x < 0 || projectilePosition.x > 2880 || projectilePosition.y < 0 || projectilePosition.y > 1920) {
+						removeProjectile = true;
+					}
+
+					if (removeProjectile) {
+						projectiles.erase(projectiles.begin() + i);
+					}
+					else {
+						projectiles[i].draw(window);
+						++i;
 					}
 				}
 				player.draw(window);

@@ -2,6 +2,7 @@
 #include "Player.h"
 #include "Enemy.h"
 #include "gameplay/Inventory.h"
+#include "gameplay/Projectile.h"
 
 Player::Player(sf::RenderWindow& window) : health(100), mana(100), defence(0), playerSprite(playerIdleTexture) {
 	if (!playerIdleTexture.loadFromFile("assets/entities/player/Warrior_idle.png")) {
@@ -239,7 +240,7 @@ int Player::getDefence() const {
 	return defence;
 }
 
-void Player::attack(sf::Event::MouseButtonPressed const& e, Inventory& inventory, std::vector<std::unique_ptr<Enemy>>& enemies) {
+void Player::attack(sf::Event::MouseButtonPressed const& e, Inventory& inventory, std::vector<std::unique_ptr<Enemy>>& enemies, std::vector<Projectile>& projectiles, sf::Vector2f targetPosition) {
 	if (e.button == sf::Mouse::Button::Left) {
 		if (attackTimer.getElapsedTime().asMilliseconds() >= 500) {
 
@@ -288,12 +289,11 @@ void Player::attack(sf::Event::MouseButtonPressed const& e, Inventory& inventory
 						i++;
 					}
 				}
+			} else {
+				auto* weapon = dynamic_cast<Weapon*>(inventory.getCurrentWeapon());
+				projectiles.emplace_back(player.getPosition(), targetPosition, weapon->getDamage());
 			}
 			attackTimer.restart();
-		//}
-		/*else if (e.button == sf::Mouse::Button::Right) {
-
-		}*/
 		}
 	}
 }

@@ -5,6 +5,7 @@
 class Item;
 class Inventory;
 class Enemy;
+class Projectile;
 
 class Player {
 public:
@@ -29,7 +30,10 @@ public:
 	void setDefence(int value);
 	int getDefence() const;
 
-	void attack(sf::Event::MouseButtonPressed const& e, Inventory& inventory, std::vector<std::unique_ptr<Enemy>>& enemies);
+	void attack(sf::Event::MouseButtonPressed const& e, Inventory& inventory, 
+		std::vector<std::unique_ptr<Enemy>>& enemies, std::vector<Projectile>& projectiles, 
+		sf::Vector2f targetPosition);
+
 	sf::FloatRect getGlobalBounds() const;
 
 

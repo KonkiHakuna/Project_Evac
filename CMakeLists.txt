@@ -48,6 +48,7 @@ add_executable(Project_Evac src/main.cpp
     src/world/Lobby.cpp src/world/Lobby.h
     src/world/Cave.cpp src/world/Cave.h
     src/save/Save.cpp src/save/Save.h
+    src/gameplay/Projectile.cpp src/gameplay/Projectile.h
 )
 
 target_include_directories(Project_Evac PRIVATE
