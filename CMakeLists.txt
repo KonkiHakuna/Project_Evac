@@ -24,6 +24,15 @@ FetchContent_Declare(
         GIT_TAG 11.1.4
 )
 FetchContent_MakeAvailable(fmt)
+
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+)
+
+FetchContent_MakeAvailable(nlohmann_json)
+
 add_executable(Project_Evac src/main.cpp 
     src/core/Game.cpp src/core/Game.h
     src/entities/Enemy.cpp src/entities/Enemy.h
@@ -45,7 +54,7 @@ target_include_directories(Project_Evac PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(Project_Evac SFML::Graphics SFML::Window SFML::System fmt)
+target_link_libraries(Project_Evac SFML::Graphics SFML::Window SFML::System fmt nlohmann_json::nlohmann_json)
 
 add_custom_command(TARGET Project_Evac POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
