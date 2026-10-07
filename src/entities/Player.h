@@ -2,9 +2,6 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "entities/Enemy.h"
-#include "gameplay/Item.h"
-
 class Item;
 class Inventory;
 class Enemy;
@@ -36,13 +33,30 @@ public:
 	sf::FloatRect getGlobalBounds() const;
 
 
+
 private:
 	int health;
 	int mana;
 	int defence;
 	sf::Vector2f velocity;
 	sf::CircleShape player;
+
+	sf::Texture playerIdleTexture;
+	sf::Texture playerRunTexture;
+	sf::Sprite playerSprite;
+
+	sf::Clock animationClock;
+
+	int currentFrame = 0;
+	bool isMoving = false;
+	bool wasMoving = false;
+	void updateAnimation();
+	bool facingRight = true;
+
 	sf::CircleShape attackPlayerHitbox;
 	sf::Clock attackTimer;
 	bool drawAttackPlayerHitbox = false;
+
+	sf::Texture playerAttackTexture;
+	bool isAttacking = false;
 };

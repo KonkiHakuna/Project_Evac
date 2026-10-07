@@ -2,12 +2,14 @@
 #include  "Enemy.h"
 #include "Player.h"
 
-Enemy::Enemy(EnemyType type, sf::Vector2f position) : type(type){
+Enemy::Enemy(EnemyType type, sf::Vector2f position) : type(type), enemySprite(enemyIdleTexture){
 	initialize(type);
 	enemy.setPosition(position);
+	enemySprite.setPosition(position);
 }
 
 void Enemy::initialize(EnemyType type) {
+	std::string textureFolderPath;
 	switch (type) {
 	case EnemyType::NORMAL:
 		enemy.setRadius(64);
@@ -15,6 +17,8 @@ void Enemy::initialize(EnemyType type) {
 		damage = 15;
 		health = 200;
 		speed = 2;
+		textureFolderPath = "assets/entities/enemy/normal/";
+		size = 2.5f;
 		break;
 	case EnemyType::QUICK:
 		enemy.setRadius(48);
@@ -22,6 +26,8 @@ void Enemy::initialize(EnemyType type) {
 		damage = 10;
 		health = 100;
 		speed = 5;
+		textureFolderPath = "assets/entities/enemy/quick/";
+		size = 2.0f;
 		break;
 	case EnemyType::TANK:
 		enemy.setRadius(96);
@@ -29,6 +35,8 @@ void Enemy::initialize(EnemyType type) {
 		damage = 50;
 		health = 500;
 		speed = 1;
+		textureFolderPath = "assets/entities/enemy/tank/";
+		size = 3.0f;
 		break;
 	case EnemyType::BOSS:
 		enemy.setRadius(128);
@@ -36,25 +44,90 @@ void Enemy::initialize(EnemyType type) {
 		damage = 75;
 		health = 2000;
 		speed = 1;
+		textureFolderPath = "assets/entities/enemy/boss/";
+		size = 4.0f;
 		break;
 	default:
 		throw std::exception("Invalid type");
 	}
 	enemy.setOrigin({ enemy.getRadius(), enemy.getRadius()});
+	if (!enemyIdleTexture.loadFromFile(textureFolderPath + "Warrior_Idle.png")) {
+		throw std::exception("Failed to load enemy idle texture");
+	}
+	if (!enemyRunTexture.loadFromFile(textureFolderPath + "Warrior_Run.png")) {
+		throw std::exception("Failed to load enemy run texture");
+	}
+	enemySprite.setTexture(enemyIdleTexture, true);
+	enemySprite.setTextureRect({ {0, 0}, {192, 192} });
+	enemySprite.setOrigin({ 96.f, 96.f });
+	enemySprite.setScale({size, size});
 }
 
 void Enemy::movement(sf::Vector2f playerPosition) {
+	isMoving = false;
 	if (playerPosition.x > enemy.getPosition().x) {
 		enemy.move({ static_cast<float>(speed), 0});
+		isMoving = true;
+		FacingRight = true;
 	}
 	if (playerPosition.x < enemy.getPosition().x) {
 		enemy.move({ static_cast<float>(-speed), 0});
+		isMoving = true;
+		FacingRight = false;
 	}
 	if (playerPosition.y > enemy.getPosition().y) {
 		enemy.move({ 0, static_cast<float>(speed)});
+		isMoving = true;
 	}
 	if (playerPosition.y < enemy.getPosition().y) {
 		enemy.move({ 0, static_cast<float>(-speed)});
+		isMoving = true;
+	}
+	enemySprite.setPosition(enemy.getPosition());
+
+	if (FacingRight) {
+		enemySprite.setScale({ size, size });
+	}
+	else {
+		enemySprite.setScale({ -size, size });
+	}
+	updateAnimation();
+}
+
+void Enemy::updateAnimation() {
+	if (isMoving != wasMoving) {
+		if (isMoving) {
+			enemySprite.setTexture(enemyRunTexture, true);
+		}
+		else {
+			enemySprite.setTexture(enemyIdleTexture, true);
+		}
+
+		currentFrame = 0;
+
+		enemySprite.setTextureRect(
+			sf::IntRect({ 0, 0 }, { 192, 192 })
+		);
+
+		animationClock.restart();
+		wasMoving = isMoving;
+	}
+
+	int frameCount = isMoving ? 6 : 8;
+	float frameTime = isMoving ? 0.10f : 0.12f;
+
+	if (animationClock.getElapsedTime().asSeconds() >= frameTime) {
+		currentFrame =
+			(currentFrame + 1) % frameCount;
+
+		enemySprite.setTextureRect(
+			sf::IntRect(
+				{ currentFrame * 192, 0 },
+				{ 192, 192 }
+			)
+		);
+
+		animationClock.restart();
 	}
 }
 
@@ -75,7 +148,7 @@ void Enemy::takeDamage(int damage) {
 }
 
 void Enemy::draw(sf::RenderWindow& window) const {
-	window.draw(enemy);
+	window.draw(enemySprite);
 }
 
 bool Enemy::isDead() const {
@@ -93,6 +166,7 @@ int Enemy::getDamage() const {
 
 void Enemy::setPosition(sf::Vector2f position) {
 	enemy.setPosition(position);
+	enemySprite.setPosition(position);
 }
 
 
@@ -174,3 +248,4 @@ void Enemy::attack(Player& player) {
 		attackCooldown.restart();
 	}
 }
+
