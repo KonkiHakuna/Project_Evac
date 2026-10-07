@@ -30,12 +30,12 @@ Shop::Shop(sf::RenderWindow& window, sf::Font& font) : shopTitle(font) {
 
 void Shop::initializeShopItems() {
 	shopItems[LobbyLocation::weaponShop].emplace_back(std::make_unique<Weapon>("Sword", "assets/items/weapons/sword.png", 100, true), 50);
-	shopItems[LobbyLocation::weaponShop].emplace_back(std::make_unique<Weapon>("Bow", "assets/items/weapons/bow.png", 25, false), 50);
+	shopItems[LobbyLocation::weaponShop].emplace_back(std::make_unique<Weapon>("Bow", "assets/items/weapons/bow.png", 50, false), 50);
 	shopItems[LobbyLocation::armory].emplace_back(std::make_unique<Armor>("Helmet", "assets/items/armor/helmet.png", 25), 50);
 	shopItems[LobbyLocation::armory].emplace_back(std::make_unique<Armor>("Chestplate", "assets/items/armor/chestplate.png", 50), 100);
 	shopItems[LobbyLocation::doctor].emplace_back(std::make_unique<Potion>("Health Potion", "assets/items/potions/health_potion.png", 50, TypeOfPotion::Healing), 50);
 	shopItems[LobbyLocation::doctor].emplace_back(std::make_unique<Potion>("Mana Potion", "assets/items/potions/mana_potion.png", 50, TypeOfPotion::Mana), 50);
-	shopItems[LobbyLocation::wizard].emplace_back(std::make_unique<Spell>("Fireball", "assets/items/spells/fireball.png", 15, 30), 50);
+	shopItems[LobbyLocation::wizard].emplace_back(std::make_unique<Spell>("Fireball", "assets/items/spells/fireball.png", 150, 30), 50);
 	//shopItems[LobbyLocation::wizard].emplace_back(std::make_unique<Spell>("Lightning Bolt", "assets/items/spells/lightning_bolt.png", 25, 40), 50);
 }
 
