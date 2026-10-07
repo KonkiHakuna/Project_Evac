@@ -38,8 +38,8 @@ void Save::LoadGame(Player& player, Inventory& inventory) {
 	int health, mana, gold;
 	saveFile >> health >> mana >> gold;
 
-	player.setHealth(health, '=');
-	player.setMana(mana, '=');
+	player.setHealth(health);
+	player.setMana(mana);
 	inventory.setPlayerGold(gold, '=');
 	inventory.clearItems();
 

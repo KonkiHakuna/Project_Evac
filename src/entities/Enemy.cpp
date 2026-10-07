@@ -62,27 +62,14 @@ int Enemy::getHealth() const {
 	return health;
 }
 
-void Enemy::setHealth(int value, char op) {
-	switch (op) {
-	case '+':
-		health += value;
-		break;
-	case '-':
-		health -= value;
-		break;
-	case '*':
-		health *= value;
-		break;
-	case '/':
-		health /= value;
-		break;
-	default:
-		throw std::exception("Invalid operator");
+void Enemy::takeDamage(int damage) {
+	if (damage < 0) {
+		throw std::exception("Damage cannot be negative");
 	}
-	if (health > 100) {
-		health = 100;
-	}
-	else if (health < 0) {
+
+	health -= damage;
+
+	if (health < 0) {
 		health = 0;
 	}
 }
@@ -176,13 +163,13 @@ EnemyType Enemy::getType() const {
 void Enemy::attack(Player& player) {
 	if (enemy.getGlobalBounds().findIntersection(player.getGlobalBounds()) && attackCooldown.getElapsedTime().asSeconds() >= 1) {
 		if (player.getDefence()==25) {
-			player.setHealth(getDamage()-getDamage() / 4, '-');
+			player.takeDamage(getDamage()-getDamage() / 4);
 		}
 		else if (player.getDefence() == 50) {
-			player.setHealth(getDamage() / 2, '-');
+			player.takeDamage(getDamage() / 2);
 		}
 		else {
-			player.setHealth(getDamage(), '-');
+			player.takeDamage(getDamage());
 		}
 		attackCooldown.restart();
 	}

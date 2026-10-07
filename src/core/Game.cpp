@@ -142,9 +142,9 @@ void Game::run() {
 					if (player.getHealth()==0) {
 						currentGameState = GameState::lobby;
 						cave.clear();
-						player.setHealth(50, '=');
+						player.setHealth(50);
 						if (player.getMana()<50) {
-							player.setMana(50, '=');
+							player.setMana(50);
 						}
 						player.resetPosition(window);
 					}

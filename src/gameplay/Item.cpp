@@ -51,10 +51,10 @@ int Armor::getDefence() {
 Potion::Potion(std::string name, std::filesystem::path file, int power, TypeOfPotion type) : Item(name, file), power(power), type(type) {}
 void Potion::equip(Player& player, Inventory& inventory) {
 	if (type == TypeOfPotion::Healing) {
-		player.setHealth(power, '+');
+		player.heal(power);
 	}
 	else if (type == TypeOfPotion::Mana) {
-		player.setMana(power, '+');
+		player.restoreMana(power);
 	}
 	inventory.removeItem(this);
 }
