@@ -189,6 +189,10 @@ void Game::run() {
 								
 								if (inventoryUI.getInventoryStatus()) {
 									inventoryUI.setInventoryStatus(false);
+
+									// Close the item action menu when the inventory is closed.
+									inventoryItemOptions.setChoosingStatus(false);
+									inventoryItemOptions.setSelectedItem(nullptr);
 								}
 								
 								else {
@@ -249,31 +253,11 @@ void Game::run() {
 							player.dash();
 						}
 					}
-
-					// Finishing wave 10 returns the player to the lobby.
-					if (cave.getCurrentWave()>10) {
-						currentGameState = GameState::lobby;
-						cave.clear();
-						projectiles.clear();
-						player.resetPosition(window);
-					}
-
-					// Player death also returns to the lobby.
-					if (player.getHealth()==0) {
-						currentGameState = GameState::lobby;
-						cave.clear();
-						projectiles.clear();
-						player.setHealth(50);
-						
-						if (player.getMana()<50) {
-							player.setMana(50);
-						}
-						player.resetPosition(window);
-					}
-
 				}
 			}
 		}
+
+
 
 		// Clear the previous frame before drawing the next one.
 		window.clear(sf::Color::Black);
@@ -335,11 +319,36 @@ void Game::run() {
 				break;
 			}
 			case GameState::cave: {
+
+				// Player death also returns to the lobby.
+				if (player.getHealth() == 0) {
+					currentGameState = GameState::lobby;
+					cave.clear();
+					projectiles.clear();
+					player.setHealth(50);
+
+					if (player.getMana() < 50) {
+						player.setMana(50);
+					}
+					player.resetPosition(window);
+					break;
+				}
+
 				player.movement();
 				player.movementBounds();
 
 				// Update wave progression and spawn the next wave.
 				cave.levelUpdate();
+
+				// Finishing wave 10 returns the player to the lobby.
+				if (cave.getCurrentWave() > 10) {
+					currentGameState = GameState::lobby;
+					cave.clear();
+					projectiles.clear();
+					player.resetPosition(window);
+					break;
+				}
+
 				cave.draw(window);
 				
 				// Work directly with Cave's enemy vector instead of making a copy.

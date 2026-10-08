@@ -85,7 +85,7 @@ void Inventory::removeItem(Item* item) {
 				)
 			);
 
-			currentWeapon = items[0].get();
+			currentWeapon = items.back().get();
 		}
 	}
 }
